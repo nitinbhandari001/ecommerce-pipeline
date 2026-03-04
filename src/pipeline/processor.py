@@ -90,8 +90,8 @@ async def process_order(raw_payload: dict, container: ServiceContainer) -> Pipel
     threshold = container.settings.anomaly_risk_threshold
     is_flagged = anomaly_report is not None and anomaly_report.risk_score >= threshold
 
-    final_status = OrderStatus.flagged_for_review if is_flagged else OrderStatus.generating_invoice
-    await container.store.update_status(order_id, final_status)
+    pre_notify_status = OrderStatus.flagged_for_review if is_flagged else OrderStatus.generating_invoice
+    await container.store.update_status(order_id, pre_notify_status)
 
     # ── Stage 4: Invoice ─────────────────────────────────────────────────────
     invoice = None
@@ -115,6 +115,9 @@ async def process_order(raw_payload: dict, container: ServiceContainer) -> Pipel
     t = time.monotonic()
     notifications: list[str] = []
     try:
+        # Build a pre-final result to pass to notify — notify needs status, anomaly_report,
+        # and invoice to choose the correct Slack template. processing_time_ms=0 is intentional
+        # (not yet finalized); notifications_sent=[] will be filled by notify().
         final_result_placeholder = PipelineResult(
             order_id=order_id,
             status=OrderStatus.flagged_for_review if is_flagged else OrderStatus.completed,
@@ -133,7 +136,7 @@ async def process_order(raw_payload: dict, container: ServiceContainer) -> Pipel
         log.warning("stage_notify_error", order_id=order_id, error=str(e))
 
     # ── Final Result ─────────────────────────────────────────────────────────
-    total_ms = max(0.1, round((time.monotonic() - pipeline_start) * 1000, 1))
+    total_ms = round((time.monotonic() - pipeline_start) * 1000, 1)
     final_status = OrderStatus.flagged_for_review if is_flagged else OrderStatus.completed
 
     result = PipelineResult(
