@@ -1,5 +1,6 @@
 """Generate HTML (and optionally PDF) invoices using Jinja2."""
 from __future__ import annotations
+import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 import structlog
@@ -13,6 +14,21 @@ log = structlog.get_logger(__name__)
 _TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 
 _PDF_AVAILABLE: bool | None = None
+
+_JINJA_ENV: "Environment | None" = None
+
+
+def _get_env() -> "Environment":
+    """Get (or create) the Jinja2 environment."""
+    global _JINJA_ENV
+    if _JINJA_ENV is None:
+        if not _TEMPLATES_DIR.exists():
+            raise InvoiceError(f"Templates directory not found: {_TEMPLATES_DIR}")
+        _JINJA_ENV = Environment(
+            loader=FileSystemLoader(str(_TEMPLATES_DIR)),
+            autoescape=select_autoescape(["html"]),
+        )
+    return _JINJA_ENV
 
 
 def _check_pdf() -> bool:
@@ -46,15 +62,10 @@ async def generate_invoice(order: Order, output_dir: str, tax_rate: float,
         generated_at=now.isoformat(),
     )
 
-    if not _TEMPLATES_DIR.exists():
-        raise InvoiceError(f"Templates directory not found: {_TEMPLATES_DIR}")
-
-    env = Environment(
-        loader=FileSystemLoader(str(_TEMPLATES_DIR)),
-        autoescape=select_autoescape(["html"]),
-    )
+    env = _get_env()
     template = env.get_template("invoice.html")
-    html_content = template.render(
+    html_content = await asyncio.to_thread(
+        template.render,
         invoice=invoice,
         order=order,
         company_name=company_name,
@@ -62,20 +73,20 @@ async def generate_invoice(order: Order, output_dir: str, tax_rate: float,
     )
 
     out_dir = Path(output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    await asyncio.to_thread(out_dir.mkdir, parents=True, exist_ok=True)
 
     # Try PDF first, fall back to HTML
     if _check_pdf():
         try:
             import weasyprint
             pdf_path = out_dir / f"{order.order_id}.pdf"
-            weasyprint.HTML(string=html_content).write_pdf(str(pdf_path))
+            await asyncio.to_thread(weasyprint.HTML(string=html_content).write_pdf, str(pdf_path))
             log.info("invoice_generated_pdf", order_id=order.order_id, path=str(pdf_path))
             return invoice.model_copy(update={"file_path": str(pdf_path)})
         except Exception as e:
             log.warning("pdf_generation_failed", error=str(e), fallback="HTML")
 
     html_path = out_dir / f"{order.order_id}.html"
-    html_path.write_text(html_content, encoding="utf-8")
+    await asyncio.to_thread(html_path.write_text, html_content, encoding="utf-8")
     log.info("invoice_generated_html", order_id=order.order_id, path=str(html_path))
     return invoice.model_copy(update={"file_path": str(html_path)})

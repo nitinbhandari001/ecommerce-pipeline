@@ -4,6 +4,7 @@ from src.pipeline.invoicer import generate_invoice
 from src.pipeline.validator import validate_order
 
 
+@pytest.mark.asyncio
 async def test_generates_html_invoice(sample_order_payload, tmp_path, settings):
     templates = Path(__file__).parent.parent / "templates"
     if not templates.exists():
@@ -14,6 +15,7 @@ async def test_generates_html_invoice(sample_order_payload, tmp_path, settings):
     assert Path(invoice.file_path).exists()
 
 
+@pytest.mark.asyncio
 async def test_invoice_contains_order_data(sample_order_payload, tmp_path):
     templates = Path(__file__).parent.parent / "templates"
     if not templates.exists():
@@ -25,6 +27,7 @@ async def test_invoice_contains_order_data(sample_order_payload, tmp_path):
     assert order.customer.email in content
 
 
+@pytest.mark.asyncio
 async def test_invoice_saved_to_disk(sample_order_payload, tmp_path):
     templates = Path(__file__).parent.parent / "templates"
     if not templates.exists():
