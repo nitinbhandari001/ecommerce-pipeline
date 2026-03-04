@@ -39,10 +39,8 @@ async def create_services(settings: Settings) -> ServiceContainer:
     return ServiceContainer(
         shopify=ShopifyService(settings, http),
         ai=AIService.from_settings(settings),
-        slack=SlackService(settings.slack_bot_token, settings.slack_channel_orders),
-        sheets=SheetsService(
-            settings.google_service_account_json, settings.google_sheet_id
-        ),
+        slack=SlackService(settings),
+        sheets=SheetsService(settings),
         email=EmailService(),
         store=OrderStore(persist_dir=settings.order_data_dir),
         settings=settings,

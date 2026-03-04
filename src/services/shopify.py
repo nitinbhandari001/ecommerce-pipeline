@@ -43,14 +43,14 @@ class ShopifyService:
     # ── Webhook verification ────────────────────────────────────────────────
 
     @staticmethod
-    def verify_webhook(body: bytes, hmac_header: str, secret: str) -> bool:
+    def verify_webhook(data: bytes, hmac_header: str, secret: str) -> bool:
         """
         Verify Shopify HMAC-SHA256 webhook signature.
         Returns True if no secret is configured (dev mode).
         """
         if not secret:
             return True
-        digest = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).digest()
+        digest = hmac.new(secret.encode("utf-8"), data, hashlib.sha256).digest()
         computed = base64.b64encode(digest).decode()
         return hmac.compare_digest(computed, hmac_header)
 
@@ -119,7 +119,7 @@ class ShopifyService:
 
     # ── API methods ───────────────────────────────────────────────────────────
 
-    async def get_order(self, order_id: str) -> Order:
+    async def fetch_order(self, order_id: str) -> Order:
         if self.is_mock:
             return self._mock_order(order_id)
         try:

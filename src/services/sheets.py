@@ -7,15 +7,18 @@ from pathlib import Path
 
 import structlog
 
+from ..config import Settings
+from ..models import Order, PipelineResult
+
 log = structlog.get_logger(__name__)
 
 
 class SheetsService:
-    def __init__(self, service_account_json: str, sheet_id: str) -> None:
-        self._sheet_id = sheet_id
+    def __init__(self, settings: Settings) -> None:
+        self._sheet_id = settings.google_sheet_id
         self._client = None
-        sa_path = Path(service_account_json)
-        if sheet_id and sa_path.exists():
+        sa_path = Path(settings.google_service_account_json)
+        if self._sheet_id and sa_path.exists():
             try:
                 import gspread
                 from google.oauth2.service_account import Credentials
@@ -29,11 +32,13 @@ class SheetsService:
 
     async def log_order(
         self,
-        order_id: str,
-        customer: str,
-        total: float,
-        status: str,
+        order: Order,
+        result: PipelineResult,
     ) -> bool:
+        order_id = order.order_id
+        customer = f"{order.customer.first_name} {order.customer.last_name}"
+        total = order.total
+        status = str(result.status)
         row = [
             order_id,
             customer,

@@ -3,19 +3,22 @@ from __future__ import annotations
 
 import structlog
 
+from ..config import Settings
+from ..models import AnomalyReport, Order, PipelineResult
+
 log = structlog.get_logger(__name__)
 
 
 class SlackService:
-    def __init__(self, token: str, channel: str) -> None:
-        self._token = token
-        self._channel = channel
+    def __init__(self, settings: Settings) -> None:
+        self._token = settings.slack_bot_token
+        self._channel = settings.slack_channel_orders
         self._client = None
-        if token:
+        if self._token:
             try:
                 from slack_sdk.web.async_client import AsyncWebClient
 
-                self._client = AsyncWebClient(token=token)
+                self._client = AsyncWebClient(token=self._token)
             except Exception as exc:
                 log.warning("slack_init_failed", error=str(exc))
 
@@ -25,14 +28,16 @@ class SlackService:
 
     async def post_order_notification(
         self,
-        order_id: str,
-        customer: str,
-        total: float,
-        status: str,
-    ) -> bool:
+        order: Order,
+        result: PipelineResult,
+    ) -> None:
+        order_id = order.order_id
+        customer = f"{order.customer.first_name} {order.customer.last_name}"
+        total = order.total
+        status = str(result.status)
         if not self.is_configured:
             log.info("slack_notification_skipped", order_id=order_id, reason="not_configured")
-            return False
+            return
         color = "good" if status == "completed" else "warning"
         blocks = [
             {
@@ -53,22 +58,22 @@ class SlackService:
                 blocks=blocks,
                 attachments=[{"color": color}],
             )
-            return True
         except Exception as exc:
             log.warning("slack_post_failed", order_id=order_id, error=str(exc))
-            return False
 
     async def post_flagged_order(
         self,
-        order_id: str,
-        customer: str,
-        total: float,
-        flags: list[str],
-        risk_score: int,
-    ) -> bool:
+        order: Order,
+        report: AnomalyReport,
+    ) -> None:
+        order_id = order.order_id
+        customer = f"{order.customer.first_name} {order.customer.last_name}"
+        total = order.total
+        flags = report.flags
+        risk_score = report.risk_score
         if not self.is_configured:
             log.info("slack_flagged_skipped", order_id=order_id, reason="not_configured")
-            return False
+            return
         flags_text = "\n".join(f"• {f}" for f in flags)
         blocks = [
             {
@@ -87,12 +92,14 @@ class SlackService:
                 "elements": [
                     {
                         "type": "button",
+                        "action_id": "approve_order",
                         "text": {"type": "plain_text", "text": "Approve"},
                         "style": "primary",
                         "value": f"approve:{order_id}",
                     },
                     {
                         "type": "button",
+                        "action_id": "reject_order",
                         "text": {"type": "plain_text", "text": "Reject"},
                         "style": "danger",
                         "value": f"reject:{order_id}",
@@ -107,7 +114,5 @@ class SlackService:
                 blocks=blocks,
                 attachments=[{"color": "danger"}],
             )
-            return True
         except Exception as exc:
             log.warning("slack_flagged_post_failed", order_id=order_id, error=str(exc))
-            return False
