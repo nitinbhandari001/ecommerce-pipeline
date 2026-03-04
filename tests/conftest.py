@@ -3,6 +3,10 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 from src.services.ai import AIService
 from src.services.shopify import ShopifyService
+from src.services import ServiceContainer
+from src.services.slack import SlackService
+from src.services.sheets import SheetsService
+from src.services.email import EmailService
 from src.storage.order_store import OrderStore
 from src.config import Settings
 
@@ -54,3 +58,26 @@ def mock_ai():
     ai.has_providers = False
     ai.call_llm = AsyncMock(return_value=None)
     return ai
+
+
+@pytest.fixture
+def container(settings, mock_shopify, mock_ai, tmp_path):
+    import httpx
+    slack = MagicMock(spec=SlackService)
+    slack.send_message = AsyncMock(return_value=True)
+    sheets = MagicMock(spec=SheetsService)
+    sheets.append_row = AsyncMock(return_value=True)
+    email = MagicMock(spec=EmailService)
+    email.send = AsyncMock(return_value=True)
+    store = OrderStore(persist_dir=str(tmp_path / "orders"))
+    http = MagicMock(spec=httpx.AsyncClient)
+    return ServiceContainer(
+        shopify=mock_shopify,
+        ai=mock_ai,
+        slack=slack,
+        sheets=sheets,
+        email=email,
+        store=store,
+        settings=settings,
+        _http=http,
+    )
