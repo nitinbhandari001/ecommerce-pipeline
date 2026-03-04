@@ -1,0 +1,28 @@
+# Secrets
+.env
+credentials/*.json
+
+# Python
+.venv/
+__pycache__/
+*.egg-info/
+*.pyc
+*.pyo
+
+# Build
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime output
+*.log
+data/invoices/
+data/orders/
+!data/invoices/.gitkeep
+!data/orders/.gitkeep

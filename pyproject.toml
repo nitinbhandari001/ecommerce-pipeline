@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=72"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecommerce-pipeline"
+version = "0.1.0"
+description = "Production-grade e-commerce order processing pipeline with AI anomaly detection"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "httpx>=0.28.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-dotenv>=1.0.1",
+    "structlog>=24.4.0",
+    "openai>=1.60.0",
+    "slack-sdk>=3.34.0",
+    "jinja2>=3.1.5",
+    "gspread>=6.1.0",
+    "google-auth>=2.38.0",
+    "faker>=33.0.0",
+]
+
+[project.optional-dependencies]
+pdf = ["weasyprint>=63.0"]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "httpx>=0.28.0",
+]
+
+[project.scripts]
+ecommerce-pipeline = "src.app:run"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
