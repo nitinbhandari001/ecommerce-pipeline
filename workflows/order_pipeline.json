@@ -1,0 +1,202 @@
+{
+  "name": "E-Commerce Order Processing Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ecommerce-order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-01",
+      "name": "Shopify Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8003/api/orders/process",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-http-01",
+      "name": "Process Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "id": "cond-1",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "completed",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "completed"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "id": "cond-2",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "flagged_for_review",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "flagged"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "id": "node-switch-01",
+      "name": "Route by Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#orders",
+          "mode": "name"
+        },
+        "text": "=:rotating_light: *Flagged Order*\nOrder ID: {{ $json.order_id }}\nStatus: {{ $json.status }}\nRisk Score: {{ $json.anomaly_report?.risk_score ?? 'N/A' }}",
+        "otherOptions": {}
+      },
+      "id": "node-slack-01",
+      "name": "Notify Slack (Flagged)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [900, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-cred-1",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "order_id": "={{ $json.order_id }}",
+            "status": "={{ $json.status }}",
+            "processing_time_ms": "={{ $json.processing_time_ms }}",
+            "timestamp": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "node-sheets-01",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [900, 400],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sheets-cred-1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Process Order').item.json }}"
+      },
+      "id": "node-respond-01",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Shopify Webhook": {
+      "main": [
+        [{ "node": "Process Order", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process Order": {
+      "main": [
+        [{ "node": "Route by Status", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route by Status": {
+      "main": [
+        [
+          { "node": "Log to Google Sheets", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Notify Slack (Flagged)", "type": "main", "index": 0 },
+          { "node": "Log to Google Sheets", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Log to Google Sheets", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Notify Slack (Flagged)": {
+      "main": [
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ecommerce-pipeline-v1"
+  },
+  "id": "ecommerce-pipeline-workflow",
+  "tags": []
+}
