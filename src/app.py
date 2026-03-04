@@ -14,7 +14,6 @@ from .config import get_settings, configure_logging
 from .services import ServiceContainer, create_services
 from .pipeline.processor import process_order
 from .models import OrderStatus
-from .exceptions import WebhookAuthError, OrderNotFoundError
 from .services.shopify import ShopifyService
 
 log = structlog.get_logger(__name__)
@@ -46,11 +45,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Restrict origins in production via CORS_ORIGINS env var
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:8003"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-Request-ID", "X-Shopify-Hmac-Sha256"],
 )
 
 
@@ -82,7 +82,10 @@ async def webhook_order_create(
     container = get_container()
     settings = container.settings
 
-    if settings.shopify_webhook_secret and x_shopify_hmac_sha256:
+    if settings.shopify_webhook_secret:
+        if not x_shopify_hmac_sha256:
+            log.warning("webhook_hmac_missing_header")
+            raise HTTPException(401, "Missing webhook signature header")
         if not ShopifyService.verify_webhook(body, x_shopify_hmac_sha256,
                                               settings.shopify_webhook_secret):
             log.warning("webhook_hmac_invalid")
@@ -179,6 +182,16 @@ async def get_invoice(order_id: str):
     if not result or not result.invoice or not result.invoice.file_path:
         raise HTTPException(404, f"No invoice for order {order_id}")
     path = Path(result.invoice.file_path)
+    # Guard against path traversal
+    settings = container.settings
+    invoice_dir = Path(__file__).parent.parent / settings.invoice_output_dir.lstrip("./")
+    invoice_dir = invoice_dir.resolve()
+    try:
+        resolved = path.resolve()
+        resolved.relative_to(invoice_dir)
+    except ValueError:
+        log.warning("invoice_path_traversal_attempt", path=str(path))
+        raise HTTPException(403, "Access denied")
     if not path.exists():
         raise HTTPException(404, "Invoice file not found on disk")
     media_type = "application/pdf" if path.suffix == ".pdf" else "text/html"
@@ -206,4 +219,6 @@ async def health_check():
 def run():
     import uvicorn
     settings = get_settings()
-    uvicorn.run("src.app:app", host="0.0.0.0", port=settings.fastapi_port, reload=True)
+    import os
+    reload = os.getenv("RELOAD", "false").lower() == "true"
+    uvicorn.run("src.app:app", host="0.0.0.0", port=settings.fastapi_port, reload=reload)
