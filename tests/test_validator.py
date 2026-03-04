@@ -1,3 +1,4 @@
+import copy
 import pytest
 from src.pipeline.validator import validate_order
 from src.exceptions import ValidationError
@@ -25,11 +26,13 @@ def test_negative_price_fails():
         validate_order(payload)
 
 def test_normalizes_country_codes(sample_order_payload):
-    sample_order_payload["shipping_address"]["country_code"] = "us"
-    order = validate_order(sample_order_payload)
+    payload = copy.deepcopy(sample_order_payload)
+    payload["shipping_address"]["country_code"] = "us"
+    order = validate_order(payload)
     assert order.shipping_address.country == "US"
 
 def test_trims_whitespace(sample_order_payload):
-    sample_order_payload["customer"]["first_name"] = "  Alice  "
-    order = validate_order(sample_order_payload)
+    payload = copy.deepcopy(sample_order_payload)
+    payload["customer"]["first_name"] = "  Alice  "
+    order = validate_order(payload)
     assert order.customer.first_name == "Alice"
