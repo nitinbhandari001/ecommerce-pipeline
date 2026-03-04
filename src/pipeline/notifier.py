@@ -1,7 +1,7 @@
 """Dispatch notifications: Slack + Google Sheets + mock email."""
 from __future__ import annotations
 import structlog
-from ..models import Order, PipelineResult
+from ..models import Order, PipelineResult, OrderStatus
 from ..services import ServiceContainer
 
 log = structlog.get_logger(__name__)
@@ -13,15 +13,17 @@ async def notify(order: Order, result: PipelineResult, container: ServiceContain
 
     # --- Customer confirmation email ---
     try:
-        invoice = result.invoice
-        await container.email.send_order_confirmation(order, invoice)
-        sent.append("email")
+        if result.invoice is None:
+            log.warning("email_skipped_no_invoice", order_id=order.order_id)
+        else:
+            await container.email.send_order_confirmation(order, result.invoice)
+            sent.append("email")
     except Exception as e:
         log.warning("email_notification_failed", order_id=order.order_id, error=str(e))
 
     # --- Slack notification ---
     try:
-        if result.status.value == "flagged_for_review" and result.anomaly_report:
+        if result.status == OrderStatus.flagged_for_review and result.anomaly_report:
             await container.slack.post_flagged_order(order, result.anomaly_report)
         else:
             await container.slack.post_order_notification(order, result)
