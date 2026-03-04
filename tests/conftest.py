@@ -1,6 +1,7 @@
 import pytest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
+from httpx import AsyncClient
 from src.services.ai import AIService
 from src.services.shopify import ShopifyService
 from src.services import ServiceContainer
@@ -9,6 +10,7 @@ from src.services.sheets import SheetsService
 from src.services.email import EmailService
 from src.storage.order_store import OrderStore
 from src.config import Settings
+from src.app import app
 
 
 @pytest.fixture
@@ -81,3 +83,15 @@ def container(settings, mock_shopify, mock_ai, tmp_path):
         settings=settings,
         _http=http,
     )
+
+
+@pytest.fixture
+async def api_client(container):
+    """FastAPI test client with mocked container."""
+    from httpx import ASGITransport
+    from src import app as app_module
+    app_module._container = container
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
+    app_module._container = None  # cleanup
