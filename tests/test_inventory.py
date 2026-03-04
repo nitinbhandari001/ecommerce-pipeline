@@ -23,16 +23,17 @@ async def test_sufficient_stock(shopify_with_products, sample_order_payload):
     assert result.items[0].status == "ok"
 
 
-async def test_insufficient_stock_flagged(shopify_with_products, sample_order_payload):
+async def test_insufficient_stock_flagged(sample_order_payload):
     import copy
     payload = copy.deepcopy(sample_order_payload)
-    shopify_with_products.list_products = AsyncMock(return_value=[
+    payload["line_items"][0]["quantity"] = 5
+    svc = MagicMock()
+    svc.list_products = AsyncMock(return_value=[
         Product(id="prod-1", title="Widget Pro", sku="WP-001", price=49.99,
                 inventory_quantity=1, category="Electronics", vendor="Acme"),
     ])
-    payload["line_items"][0]["quantity"] = 5
     order = validate_order(payload)
-    checker = InventoryChecker(shopify_with_products)
+    checker = InventoryChecker(svc)
     result = await checker.check(order)
     assert result.items[0].status == "backorder"
 

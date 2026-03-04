@@ -43,6 +43,9 @@ class InventoryChecker:
                 status=status,
             ))
 
+        if not items:
+            return InventoryResult(status="fail", items=[])
+
         if all(i.status == "ok" for i in items):
             overall = "ok"
         elif any(i.status == "ok" for i in items):
