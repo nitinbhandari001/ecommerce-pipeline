@@ -1,1 +1,302 @@
-[]
+[
+  {
+    "id": "1001",
+    "title": "Wireless Earbuds Pro",
+    "sku": "WEP-1001",
+    "price": 89.99,
+    "inventory_quantity": 50,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 1409
+  },
+  {
+    "id": "1002",
+    "title": "Smart Watch Series X",
+    "sku": "SWS-1002",
+    "price": 249.99,
+    "inventory_quantity": 30,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 328
+  },
+  {
+    "id": "1003",
+    "title": "Bluetooth Speaker",
+    "sku": "BS-1003",
+    "price": 59.99,
+    "inventory_quantity": 75,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 151
+  },
+  {
+    "id": "1004",
+    "title": "USB-C Hub 7-in-1",
+    "sku": "UH7-1004",
+    "price": 39.99,
+    "inventory_quantity": 100,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 1618
+  },
+  {
+    "id": "1005",
+    "title": "Portable Charger 20000mAh",
+    "sku": "PC2-1005",
+    "price": 49.99,
+    "inventory_quantity": 80,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 663
+  },
+  {
+    "id": "1006",
+    "title": "Gaming Mouse RGB",
+    "sku": "GMR-1006",
+    "price": 44.99,
+    "inventory_quantity": 60,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 601
+  },
+  {
+    "id": "1007",
+    "title": "Mechanical Keyboard",
+    "sku": "MK-1007",
+    "price": 129.99,
+    "inventory_quantity": 40,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 557
+  },
+  {
+    "id": "1008",
+    "title": "Webcam 4K",
+    "sku": "W4-1008",
+    "price": 79.99,
+    "inventory_quantity": 45,
+    "category": "Electronics",
+    "vendor": "TechGear",
+    "weight_grams": 385
+  },
+  {
+    "id": "1009",
+    "title": "Classic Crew Neck Tee",
+    "sku": "CCN-1009",
+    "price": 24.99,
+    "inventory_quantity": 200,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 1608
+  },
+  {
+    "id": "1010",
+    "title": "Slim Fit Chinos",
+    "sku": "SFC-1010",
+    "price": 59.99,
+    "inventory_quantity": 150,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 309
+  },
+  {
+    "id": "1011",
+    "title": "Hooded Sweatshirt",
+    "sku": "HS-1011",
+    "price": 49.99,
+    "inventory_quantity": 120,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 1485
+  },
+  {
+    "id": "1012",
+    "title": "Running Shorts",
+    "sku": "RS-1012",
+    "price": 34.99,
+    "inventory_quantity": 180,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 1616
+  },
+  {
+    "id": "1013",
+    "title": "Oxford Button-Down",
+    "sku": "OB-1013",
+    "price": 44.99,
+    "inventory_quantity": 90,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 1927
+  },
+  {
+    "id": "1014",
+    "title": "Yoga Leggings",
+    "sku": "YL-1014",
+    "price": 39.99,
+    "inventory_quantity": 200,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 1216
+  },
+  {
+    "id": "1015",
+    "title": "Puffer Jacket",
+    "sku": "PJ-1015",
+    "price": 89.99,
+    "inventory_quantity": 60,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 278
+  },
+  {
+    "id": "1016",
+    "title": "Canvas Sneakers",
+    "sku": "CS-1016",
+    "price": 64.99,
+    "inventory_quantity": 100,
+    "category": "Clothing",
+    "vendor": "StyleHouse",
+    "weight_grams": 1309
+  },
+  {
+    "id": "1017",
+    "title": "Cast Iron Skillet 12in",
+    "sku": "CIS-1017",
+    "price": 39.99,
+    "inventory_quantity": 80,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 964
+  },
+  {
+    "id": "1018",
+    "title": "Pour-Over Coffee Set",
+    "sku": "PCS-1018",
+    "price": 34.99,
+    "inventory_quantity": 65,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 165
+  },
+  {
+    "id": "1019",
+    "title": "Bamboo Cutting Board",
+    "sku": "BCB-1019",
+    "price": 24.99,
+    "inventory_quantity": 120,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 161
+  },
+  {
+    "id": "1020",
+    "title": "Stainless Steel Water Bottle",
+    "sku": "SSW-1020",
+    "price": 19.99,
+    "inventory_quantity": 200,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 291
+  },
+  {
+    "id": "1021",
+    "title": "Scented Candle Set",
+    "sku": "SCS-1021",
+    "price": 29.99,
+    "inventory_quantity": 150,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 547
+  },
+  {
+    "id": "1022",
+    "title": "Cotton Throw Blanket",
+    "sku": "CTB-1022",
+    "price": 44.99,
+    "inventory_quantity": 90,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 576
+  },
+  {
+    "id": "1023",
+    "title": "Desk Organizer Set",
+    "sku": "DOS-1023",
+    "price": 27.99,
+    "inventory_quantity": 70,
+    "category": "Home & Kitchen",
+    "vendor": "HomeBasics",
+    "weight_grams": 1134
+  },
+  {
+    "id": "1024",
+    "title": "Leather Wallet Slim",
+    "sku": "LWS-1024",
+    "price": 34.99,
+    "inventory_quantity": 100,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 1332
+  },
+  {
+    "id": "1025",
+    "title": "Canvas Backpack",
+    "sku": "CB-1025",
+    "price": 49.99,
+    "inventory_quantity": 80,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 154
+  },
+  {
+    "id": "1026",
+    "title": "Polarized Sunglasses",
+    "sku": "PS-1026",
+    "price": 29.99,
+    "inventory_quantity": 120,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 1249
+  },
+  {
+    "id": "1027",
+    "title": "Stainless Watch Classic",
+    "sku": "SWC-1027",
+    "price": 79.99,
+    "inventory_quantity": 50,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 507
+  },
+  {
+    "id": "1028",
+    "title": "Silicone Watch Band",
+    "sku": "SWB-1028",
+    "price": 14.99,
+    "inventory_quantity": 200,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 1566
+  },
+  {
+    "id": "1029",
+    "title": "Luggage Tag Set",
+    "sku": "LTS-1029",
+    "price": 9.99,
+    "inventory_quantity": 300,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 1430
+  },
+  {
+    "id": "1030",
+    "title": "Travel Neck Pillow",
+    "sku": "TNP-1030",
+    "price": 19.99,
+    "inventory_quantity": 150,
+    "category": "Accessories",
+    "vendor": "Acme Corp",
+    "weight_grams": 1536
+  }
+]
