@@ -48,6 +48,7 @@ def test_country_mismatch_flagged():
                for f in report.flags)
 
 
+@pytest.mark.asyncio
 async def test_ai_fallback_on_no_providers():
     ai = MagicMock(spec=AIService)
     ai.has_providers = False

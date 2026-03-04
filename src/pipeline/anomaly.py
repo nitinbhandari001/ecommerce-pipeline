@@ -97,11 +97,14 @@ async def detect_anomalies(order: Order, ai: AIService) -> AnomalyReport:
         )
         if result:
             parsed = json.loads(result.strip())
+            _valid_recommendations = {"approve", "review", "reject"}
+            raw_score = int(parsed.get("risk_score", 0))
+            raw_reco = parsed.get("recommendation", "review")
             return AnomalyReport(
                 order_id=order.order_id,
                 flags=parsed.get("flags", []),
-                risk_score=int(parsed.get("risk_score", 0)),
-                recommendation=parsed.get("recommendation", "approve"),
+                risk_score=max(0, min(100, raw_score)),
+                recommendation=raw_reco if raw_reco in _valid_recommendations else "review",
                 reasoning=parsed.get("reasoning", ""),
             )
     except Exception as e:
