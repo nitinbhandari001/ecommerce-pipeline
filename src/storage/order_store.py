@@ -36,7 +36,8 @@ class OrderStore:
             self._statuses[result.order_id] = result.status
             if self._persist_dir:
                 path = self._persist_dir / f"{result.order_id}.json"
-                path.write_text(result.model_dump_json(indent=2), encoding="utf-8")
+                content = result.model_dump_json(indent=2)
+                await asyncio.to_thread(path.write_text, content, encoding="utf-8")
 
     async def get_order(self, order_id: str) -> Order | None:
         return self._orders.get(order_id)
@@ -49,12 +50,13 @@ class OrderStore:
 
     async def is_processed(self, order_id: str) -> bool:
         """Idempotency check — has this order already reached a terminal state?"""
-        status = self._statuses.get(order_id)
-        return status in (
-            OrderStatus.completed,
-            OrderStatus.flagged_for_review,
-            OrderStatus.failed,
-        )
+        async with self._lock:
+            status = self._statuses.get(order_id)
+            return status in (
+                OrderStatus.completed,
+                OrderStatus.flagged_for_review,
+                OrderStatus.failed,
+            )
 
     async def list_results(self) -> list[PipelineResult]:
         return list(self._results.values())

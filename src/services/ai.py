@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import structlog
 from openai import AsyncOpenAI
 
+from ..config import Settings
 from ..exceptions import AIServiceError
 
 log = structlog.get_logger(__name__)
@@ -26,9 +27,13 @@ class LLMProvider:
 class AIService:
     def __init__(self, providers: list[LLMProvider]) -> None:
         self._providers = [p for p in providers if p.is_configured]
+        self._clients: list[tuple[LLMProvider, AsyncOpenAI]] = [
+            (p, AsyncOpenAI(api_key=p.api_key, base_url=p.base_url))
+            for p in self._providers
+        ]
 
     @classmethod
-    def from_settings(cls, settings) -> "AIService":
+    def from_settings(cls, settings: "Settings") -> "AIService":
         return cls(
             [
                 LLMProvider(
@@ -54,9 +59,8 @@ class AIService:
 
     async def call_llm(self, system: str, user: str) -> str | None:
         """Try providers in cascade order. Returns text or None if all fail."""
-        for provider in self._providers:
+        for provider, client in self._clients:
             try:
-                client = AsyncOpenAI(api_key=provider.api_key, base_url=provider.base_url)
                 response = await client.chat.completions.create(
                     model=provider.model,
                     messages=[

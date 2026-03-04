@@ -50,7 +50,7 @@ class ShopifyService:
         """
         if not secret:
             return True
-        digest = hmac.new(secret.encode("utf-8"), data, hashlib.sha256).digest()
+        digest = hmac.digest(secret.encode("utf-8"), data, hashlib.sha256)
         computed = base64.b64encode(digest).decode()
         return hmac.compare_digest(computed, hmac_header)
 
@@ -59,7 +59,7 @@ class ShopifyService:
     def _load_products(self) -> list[Product]:
         if self._products_cache is not None:
             return self._products_cache
-        products_path = Path("data") / "products.json"
+        products_path = Path(__file__).parent.parent.parent / "data" / "products.json"
         if products_path.exists():
             raw = json.loads(products_path.read_text(encoding="utf-8"))
             self._products_cache = [Product(**p) for p in raw]

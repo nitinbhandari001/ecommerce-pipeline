@@ -17,7 +17,8 @@ class SheetsService:
     def __init__(self, settings: Settings) -> None:
         self._sheet_id = settings.google_sheet_id
         self._client = None
-        sa_path = Path(settings.google_service_account_json)
+        sa_path_str = settings.google_service_account_json
+        sa_path = Path(sa_path_str) if Path(sa_path_str).is_absolute() else Path(__file__).parent.parent.parent / sa_path_str.lstrip("./")
         if self._sheet_id and sa_path.exists():
             try:
                 import gspread
@@ -25,10 +26,10 @@ class SheetsService:
 
                 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
                 creds = Credentials.from_service_account_file(str(sa_path), scopes=scopes)
-                self._client = gspread.authorize(creds)
+                self._client = gspread.Client(auth=creds)
             except Exception as exc:
                 log.warning("sheets_init_failed", error=str(exc))
-        self._csv_path = Path("data") / "orders" / "order_log.csv"
+        self._csv_path = Path(__file__).parent.parent.parent / "data" / "orders" / "order_log.csv"
 
     async def log_order(
         self,

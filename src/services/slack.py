@@ -52,7 +52,8 @@ class SlackService:
             }
         ]
         try:
-            assert self._client is not None
+            if self._client is None:
+                return
             await self._client.chat_postMessage(
                 channel=self._channel,
                 blocks=blocks,
@@ -108,7 +109,8 @@ class SlackService:
             },
         ]
         try:
-            assert self._client is not None
+            if self._client is None:
+                return
             await self._client.chat_postMessage(
                 channel=self._channel,
                 blocks=blocks,
